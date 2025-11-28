@@ -54,15 +54,15 @@ jobs:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         SERVER_IP: ${{ needs.terraform.outputs.server_ip }}
       run: |
-        echo "$SSH_PRIVATE_KEY" > key.pem
-        chmod 600 key.pem
+        echo "$SSH_PRIVATE_KEY" > bank.pem
+        chmod 600 bank.pem
         
         # Wait for server to be ready
         sleep 60
         
         # Copy files to server
-        scp -i key.pem -o StrictHostKeyChecking=no -r . ubuntu@$SERVER_IP:/home/ubuntu/banking
+        scp -i bakn.pem -o StrictHostKeyChecking=no -r . ubuntu@$SERVER_IP:/home/ubuntu/banking
         
-        ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
+        ssh -i bakn.pem -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
           cd /home/ubuntu/banking
           docker-compose down
