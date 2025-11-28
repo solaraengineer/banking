@@ -84,3 +84,11 @@ output "server_1_ip" {
 output "server_2_ip" {
   value = aws_instance.banking_server[1].public_ip
 }
+  lifecycle {
+    ignore_changes = [name]
+  }
+
+  tags = {
+    Name = "banking-sg"
+  }
+}
