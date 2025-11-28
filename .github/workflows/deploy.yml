@@ -12,46 +12,24 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - uses: hashicorp/setup-terraform@v2
-      with:
-        terraform_wrapper: false
-
-    - uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-central-1
-
-    - name: Terraform Init & Apply
-      run: |
-        cd terraform
-        terraform init
-        terraform apply -auto-approve  # THIS WAS MISSING
-
-    - name: Get Server IPs
-      id: get-ips
-      run: |
-        cd terraform
-        
-        # Get both server IPs
-        SERVER_1=$(terraform output -raw server_1_ip)
-        SERVER_2=$(terraform output -raw server_2_ip)
-        
-        echo "server_1=$SERVER_1" >> $GITHUB_OUTPUT
-        echo "server_2=$SERVER_2" >> $GITHUB_OUTPUT
-        
-        echo "Server 1: $SERVER_1"
-        echo "Server 2: $SERVER_2"
-
     - name: Deploy to Server 1
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ips.outputs.server_1 }}
+        SERVER_IP: ${{ secrets.SERVER_1_IP }}
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
         
-        echo "Deploying to Server 1..."
+        echo "Deploying to Server 1 ($SERVER_IP)..."
+        
+        # Wait for server to be ready
+        for i in {1..10}; do
+          if ssh -i bank -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$SERVER_IP "echo ready" 2>/dev/null; then
+            break
+          fi
+          echo "Waiting for server... ($i/10)"
+          sleep 10
+        done
         
         rsync -avz --delete \
           -e "ssh -i bank -o StrictHostKeyChecking=no" \
@@ -67,7 +45,7 @@ jobs:
         
         ssh -i bank -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
         cd /home/ubuntu/banking
-        docker-compose down
+        docker-compose down || true
         docker-compose up -d --build
         docker ps
         ENDSSH
@@ -77,12 +55,21 @@ jobs:
     - name: Deploy to Server 2
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ips.outputs.server_2 }}
+        SERVER_IP: ${{ secrets.SERVER_2_IP }}
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
         
-        echo "Deploying to Server 2..."
+        echo "Deploying to Server 2 ($SERVER_IP)..."
+        
+        # Wait for server to be ready
+        for i in {1..10}; do
+          if ssh -i bank -o StrictHostKeyChecking=no -o ConnectTimeout=5 ubuntu@$SERVER_IP "echo ready" 2>/dev/null; then
+            break
+          fi
+          echo "Waiting for server... ($i/10)"
+          sleep 10
+        done
         
         rsync -avz --delete \
           -e "ssh -i bank -o StrictHostKeyChecking=no" \
@@ -98,7 +85,7 @@ jobs:
         
         ssh -i bank -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
         cd /home/ubuntu/banking
-        docker-compose down
+        docker-compose down || true
         docker-compose up -d --build
         docker ps
         ENDSSH
