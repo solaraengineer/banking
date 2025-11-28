@@ -41,11 +41,18 @@ resource "aws_security_group" "banking_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # THIS IS THE FIX - prevents recreation if it already exists
+  lifecycle {
+    create_before_destroy = true
+    prevent_destroy       = true
+  }
+
   tags = {
     Name = "banking-sg"
   }
 }
 
+# Rest stays the same...
 resource "aws_instance" "banking_server" {
   count         = 2
 
@@ -72,7 +79,6 @@ resource "aws_instance" "banking_server" {
   }
 }
 
-# Output IPs of both servers
 output "server_ips" {
   value = aws_instance.banking_server[*].public_ip
 }
@@ -83,12 +89,4 @@ output "server_1_ip" {
 
 output "server_2_ip" {
   value = aws_instance.banking_server[1].public_ip
-}
-  lifecycle {
-    ignore_changes = [name]
-  }
-
-  tags = {
-    Name = "banking-sg"
-  }
 }
