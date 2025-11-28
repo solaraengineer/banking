@@ -41,14 +41,13 @@ jobs:
     - name: Deploy to Server 1
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ip.output.server_1_ip }}
+        SERVER_IP: ${{ steps.get-ips.outputs.server_1 }}  # FIXED
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
         
         echo "Deploying to Server 1..."
         
-        # Just sync the banking code, exclude shit we don't need
         rsync -avz --delete \
           -e "ssh -i bank -o StrictHostKeyChecking=no" \
           --exclude '.git' \
@@ -61,7 +60,6 @@ jobs:
           --exclude 'media' \
           . ubuntu@$SERVER_IP:/home/ubuntu/banking/
         
-        # Restart docker containers
         ssh -i bank -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
         cd /home/ubuntu/banking
         docker-compose down
@@ -69,19 +67,18 @@ jobs:
         docker ps
         ENDSSH
         
-        echo " Server 1 deployed"
+        echo "✅ Server 1 deployed"
 
     - name: Deploy to Server 2
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ip.output.server_2_ip }}
+        SERVER_IP: ${{ steps.get-ips.outputs.server_2 }}  # FIXED
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
         
         echo "Deploying to Server 2..."
         
-        # Same shit, just sync and restart
         rsync -avz --delete \
           -e "ssh -i bank -o StrictHostKeyChecking=no" \
           --exclude '.git' \
