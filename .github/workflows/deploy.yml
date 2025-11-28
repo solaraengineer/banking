@@ -41,7 +41,7 @@ jobs:
     - name: Deploy to Server 1
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ip.server_1 }}
+        SERVER_IP: ${{ steps.get-ip.outputs.server_1 }}
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
@@ -74,7 +74,7 @@ jobs:
     - name: Deploy to Server 2
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ip.server_2 }}
+        SERVER_IP: ${{ steps.get-ip.outputs.server_2 }}
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
