@@ -22,11 +22,16 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-central-1
 
+    - name: Terraform Init & Apply
+      run: |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve  # THIS WAS MISSING
+
     - name: Get Server IPs
       id: get-ips
       run: |
         cd terraform
-        terraform init
         
         # Get both server IPs
         SERVER_1=$(terraform output -raw server_1_ip)
@@ -41,7 +46,7 @@ jobs:
     - name: Deploy to Server 1
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ips.outputs.server_1 }}  # FIXED
+        SERVER_IP: ${{ steps.get-ips.outputs.server_1 }}
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
@@ -72,7 +77,7 @@ jobs:
     - name: Deploy to Server 2
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ steps.get-ips.outputs.server_2 }}  # FIXED
+        SERVER_IP: ${{ steps.get-ips.outputs.server_2 }}
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
