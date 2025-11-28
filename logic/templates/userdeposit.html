@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Confirmation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background-color: #f5f5f7;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #0a84ff 0%, #0066cc 100%);
+            padding: 40px 30px;
+            text-align: center;
+            color: white;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            color: #1d1d1f;
+            margin-bottom: 20px;
+        }
+        .amount-box {
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+        }
+        .amount-label {
+            font-size: 14px;
+            color: #86868b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .amount-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #30d158;
+            margin: 0;
+        }
+        .details {
+            background: #f5f5f7;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #d2d2d7;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #86868b;
+            font-size: 14px;
+        }
+        .detail-value {
+            color: #1d1d1f;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .message {
+            font-size: 15px;
+            color: #1d1d1f;
+            line-height: 1.6;
+            margin: 20px 0;
+        }
+        .footer {
+            background: #f5f5f7;
+            padding: 30px;
+            text-align: center;
+            font-size: 13px;
+            color: #86868b;
+        }
+        .footer a {
+            color: #0a84ff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>💰 Deposit Successful</h1>
+        </div>
+
+        <div class="content">
+            <p class="greeting">Hi {{ customer_name }},</p>
+
+            <p class="message">
+                Your deposit has been processed successfully. The funds are now available in your account.
+            </p>
+
+            <div class="amount-box">
+                <div class="amount-label">Amount Deposited</div>
+                <div class="amount-value">${{ amount }}</div>
+            </div>
+
+            <div class="details">
+                <div class="detail-row">
+                    <span class="detail-label">Account Holder</span>
+                    <span class="detail-value">{{ customer_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email</span>
+                    <span class="detail-value">{{ customer_email }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Address</span>
+                    <span class="detail-value">{{ living_address }}</span>
+                </div>
+            </div>
+
+            <p class="message">
+                If you have any questions or didn't authorize this transaction, please contact our support team immediately.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>© 2025 Apex Bank. All rights reserved.</p>
+            <p>This is an automated message, please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>

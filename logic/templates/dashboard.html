@@ -1,0 +1,2348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Bank Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #111111;
+      --bg-tertiary: #1a1a1a;
+      --border-primary: #222222;
+      --border-secondary: #2a2a2a;
+      --text-primary: #ffffff;
+      --text-secondary: #999999;
+      --text-tertiary: #666666;
+      --accent-primary: #ffffff;
+      --accent-secondary: #f5f5f5;
+      --success: #00ff88;
+      --error: #ff4757;
+      --warning: #ffa502;
+      --glow-primary: rgba(255, 255, 255, 0.1);
+      --glow-secondary: rgba(138, 43, 226, 0.3);
+      --glow-tertiary: rgba(0, 191, 255, 0.3);
+    }
+
+    body.light-mode {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f5;
+      --bg-tertiary: #e8e8e8;
+      --border-primary: #e0e0e0;
+      --border-secondary: #d0d0d0;
+      --text-primary: #0a0a0a;
+      --text-secondary: #666666;
+      --text-tertiary: #999999;
+      --accent-primary: #0a0a0a;
+      --accent-secondary: #1a1a1a;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* Animated Gradient Background */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.15;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(138, 43, 226, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(0, 191, 255, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(255, 165, 2, 0.2) 0%, transparent 50%);
+      animation: bgShift 15s ease infinite;
+    }
+
+    @keyframes bgShift {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      33% {
+        transform: translate(-5%, 5%) scale(1.1);
+      }
+      66% {
+        transform: translate(5%, -5%) scale(0.9);
+      }
+    }
+
+    /* Particles */
+    #particles-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.3;
+    }
+
+    /* Loading Skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--bg-tertiary) 50%, var(--bg-secondary) 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s ease-in-out infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 10001;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toast {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 16px 20px;
+      min-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px);
+      animation: slideInRight 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .toast::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--success);
+    }
+
+    .toast.error::before {
+      background: var(--error);
+    }
+
+    .toast.warning::before {
+      background: var(--warning);
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .toast-icon {
+      font-size: 20px;
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .toast-message {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(10, 10, 10, 0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-primary);
+      padding: 20px 0;
+      margin-bottom: 48px;
+      transition: all 0.3s ease;
+    }
+
+    body.light-mode .navbar {
+      background: rgba(255, 255, 255, 0.8);
+    }
+
+    .navbar-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-icon {
+      width: 8px;
+      height: 8px;
+      background: var(--text-primary);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+      box-shadow: 0 0 20px var(--glow-primary);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 20px var(--glow-primary);
+      }
+      50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+        box-shadow: 0 0 40px var(--glow-primary);
+      }
+    }
+
+    .nav-menu {
+      display: flex;
+      gap: 32px;
+      align-items: center;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      padding: 8px 0;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      transform: translateY(-2px);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--text-primary), transparent);
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after {
+      width: 100%;
+    }
+
+    .nav-link.active {
+      color: var(--text-primary);
+    }
+
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 18px;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-tertiary);
+      transform: rotate(180deg);
+    }
+
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 16px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .user-menu:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--border-secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      animation: avatarGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes avatarGlow {
+      0%, 100% {
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(118, 75, 162, 0.8);
+      }
+    }
+
+    .user-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .user-email {
+      font-size: 11px;
+      color: var(--text-tertiary);
+    }
+
+    .hero-section {
+      margin-bottom: 48px;
+      animation: fadeInUp 0.6s ease;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      animation: fadeIn 0.8s ease 0.2s both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .hero-balance {
+      font-size: 72px;
+      font-weight: 800;
+      letter-spacing: -3px;
+      margin-bottom: 8px;
+      line-height: 1;
+      background: linear-gradient(135deg, #ffffff 0%, #999999 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: fadeIn 0.8s ease 0.3s both;
+      position: relative;
+    }
+
+    .hero-balance::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--text-primary), transparent);
+      opacity: 0.3;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      animation: fadeIn 0.8s ease 0.4s both;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 48px;
+      margin-top: 32px;
+      padding: 24px 0;
+      border-top: 1px solid var(--border-primary);
+      border-bottom: 1px solid var(--border-primary);
+      animation: fadeIn 0.8s ease 0.5s both;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: transform 0.3s ease;
+      cursor: pointer;
+    }
+
+    .stat-item:hover {
+      transform: translateY(-4px);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+
+    .stat-change {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .stat-change.positive {
+      color: var(--success);
+    }
+
+    .stat-change.negative {
+      color: var(--error);
+    }
+
+    .stat-change.neutral {
+      color: var(--warning);
+    }
+
+    .grid-layout {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .grid-3 { grid-column: span 3; }
+    .grid-4 { grid-column: span 4; }
+    .grid-6 { grid-column: span 6; }
+    .grid-8 { grid-column: span 8; }
+    .grid-9 { grid-column: span 9; }
+    .grid-12 { grid-column: span 12; }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 28px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease both;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.1s; }
+    .card:nth-child(2) { animation-delay: 0.2s; }
+    .card:nth-child(3) { animation-delay: 0.3s; }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .card:hover::before {
+      opacity: 1;
+    }
+
+    .card:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--border-secondary);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .card-action {
+      font-size: 18px;
+      opacity: 0.4;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .card-action:hover {
+      opacity: 1;
+      transform: scale(1.2) rotate(10deg);
+    }
+
+    /* Holographic Card Effect */
+    .card-flip-container {
+      perspective: 1500px;
+      cursor: pointer;
+      min-height: 240px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .card-flipper {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+      transform-style: preserve-3d;
+    }
+
+    .card-flipper.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .wallet-card {
+      background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+      border: 1px solid var(--border-secondary);
+      border-radius: 16px;
+      padding: 32px;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .wallet-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background:
+        radial-gradient(circle, rgba(138, 43, 226, 0.1) 0%, transparent 70%),
+        radial-gradient(circle, rgba(0, 191, 255, 0.08) 0%, transparent 70%);
+      animation: holographicShift 10s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes holographicShift {
+      0%, 100% {
+        transform: translate(0, 0) rotate(0deg);
+      }
+      25% {
+        transform: translate(10%, 10%) rotate(90deg);
+      }
+      50% {
+        transform: translate(-10%, 10%) rotate(180deg);
+      }
+      75% {
+        transform: translate(-10%, -10%) rotate(270deg);
+      }
+    }
+
+    .wallet-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.05) 30%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .card-flip-container:hover .wallet-card::after {
+      transform: translateX(100%);
+    }
+
+    .card-front {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+    }
+
+    .card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      transform: rotateY(180deg);
+    }
+
+    .card-chip {
+      width: 48px;
+      height: 36px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+      border-radius: 6px;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 40px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      animation: chipGlow 3s ease-in-out infinite;
+    }
+
+    @keyframes chipGlow {
+      0%, 100% {
+        box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+      }
+      50% {
+        box-shadow: 0 4px 20px rgba(255, 215, 0, 0.6);
+      }
+    }
+
+    .card-chip::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      right: 6px;
+      bottom: 6px;
+      background: linear-gradient(135deg, #e6c200 0%, #f4d03f 100%);
+      border-radius: 3px;
+    }
+
+    .card-number {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 4px;
+      font-family: 'Courier New', monospace;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 2;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+
+    .card-number.revealed {
+      letter-spacing: 2px;
+      font-size: 20px;
+    }
+
+    .card-holder {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-holder-name {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .card-label {
+      font-size: 9px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .card-value {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Card Back Styles */
+    .card-magnetic-strip {
+      width: calc(100% + 64px);
+      height: 50px;
+      background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
+      margin: -32px -32px 32px -32px;
+      position: relative;
+      z-index: 1;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .card-cvv-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-cvv-label {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+    }
+
+    .card-cvv-box {
+      background: rgba(255, 255, 255, 0.95);
+      color: #000;
+      border-radius: 6px;
+      padding: 12px 24px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      font-family: 'Courier New', monospace;
+      width: fit-content;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-cvv-box::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, transparent 70%);
+      transform: translate(-50%, -50%) scale(0);
+      transition: transform 0.3s ease;
+    }
+
+    .card-flip-container:hover .card-cvv-box::before {
+      transform: translate(-50%, -50%) scale(1.5);
+    }
+
+    .card-back-text {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      line-height: 1.8;
+      margin-bottom: 20px;
+      text-align: left;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-signature-strip {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 16px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-signature {
+      font-size: 18px;
+      font-weight: 600;
+      font-style: italic;
+      margin-top: 8px;
+      color: var(--text-primary);
+      font-family: 'Brush Script MT', cursive;
+    }
+
+    .card-network-logo {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      font-size: 32px;
+      font-weight: 800;
+      opacity: 0.3;
+      z-index: 2;
+      font-style: italic;
+      animation: logoFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes logoFloat {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    .card-toggle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-decoration: underline;
+      cursor: pointer;
+      display: inline-block;
+      transition: all 0.3s ease;
+    }
+
+    .card-toggle:hover {
+      color: var(--text-primary);
+      transform: translateX(5px);
+    }
+
+    .card-flip-hint {
+      font-size: 11px;
+      color: var(--text-tertiary);
+      text-align: center;
+      margin-top: 12px;
+      opacity: 0.6;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text-primary);
+      font-size: 15px;
+      font-family: inherit;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      background: var(--bg-secondary);
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .btn {
+      width: 100%;
+      background: var(--accent-primary);
+      color: var(--bg-primary);
+      border: none;
+      border-radius: 8px;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+    }
+
+    .btn:hover::before {
+      width: 300%;
+      height: 300%;
+    }
+
+    .btn:hover {
+      background: var(--accent-secondary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .transaction-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border-primary);
+      transition: all 0.3s ease;
+      position: relative;
+      animation: fadeInUp 0.4s ease both;
+    }
+
+    .transaction-item:nth-child(1) { animation-delay: 0.1s; }
+    .transaction-item:nth-child(2) { animation-delay: 0.2s; }
+    .transaction-item:nth-child(3) { animation-delay: 0.3s; }
+    .transaction-item:nth-child(4) { animation-delay: 0.4s; }
+    .transaction-item:nth-child(5) { animation-delay: 0.5s; }
+
+    .transaction-item:last-child {
+      border-bottom: none;
+    }
+
+    .transaction-item::before {
+      content: '';
+      position: absolute;
+      left: -28px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 0;
+      background: linear-gradient(180deg, var(--text-primary), transparent);
+      transition: height 0.4s ease;
+    }
+
+    .transaction-item:hover::before {
+      height: 80%;
+    }
+
+    .transaction-item:hover {
+      padding-left: 16px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .transaction-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .transaction-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .transaction-item:hover .transaction-icon {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .transaction-info h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .transaction-info p {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .transaction-right {
+      text-align: right;
+    }
+
+    .transaction-amount {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .transaction-amount.negative {
+      color: var(--error);
+    }
+
+    .transaction-amount.positive {
+      color: var(--success);
+    }
+
+    .transaction-status {
+      font-size: 10px;
+      color: var(--success);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 80px 40px;
+      color: var(--text-tertiary);
+      animation: fadeIn 0.8s ease;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.2;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .empty-state-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state-description {
+      font-size: 13px;
+    }
+
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-primary), transparent);
+      margin: 48px 0;
+    }
+
+    .btn-reset-balance {
+      width: 100%;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 16px;
+    }
+
+    .btn-reset-balance:hover {
+      background: var(--bg-primary);
+      border-color: var(--warning);
+      color: var(--warning);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 165, 2, 0.3);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 480px;
+      width: 90%;
+      transform: scale(0.9);
+      transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+
+    .modal-icon {
+      font-size: 56px;
+      margin-bottom: 20px;
+      text-align: center;
+      animation: modalIconPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes modalIconPulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+      letter-spacing: -1px;
+    }
+
+    .modal-message {
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.6;
+      margin-bottom: 32px;
+      font-size: 15px;
+    }
+
+    .modal-warning {
+      background: rgba(255, 165, 2, 0.1);
+      border: 1px solid rgba(255, 165, 2, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 32px;
+      color: var(--warning);
+      font-size: 13px;
+      text-align: center;
+      font-weight: 600;
+      animation: warningPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes warningPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 rgba(255, 165, 2, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 20px rgba(255, 165, 2, 0.3);
+      }
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .modal-btn {
+      padding: 14px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .modal-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+    }
+
+    .modal-btn:hover::before {
+      width: 300%;
+      height: 300%;
+    }
+
+    .modal-btn-cancel {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-primary);
+    }
+
+    .modal-btn-cancel:hover {
+      background: var(--bg-primary);
+      border-color: var(--border-secondary);
+      transform: translateY(-2px);
+    }
+
+    .modal-btn-confirm {
+      background: var(--accent-primary);
+      color: var(--bg-primary);
+    }
+
+    .modal-btn-confirm:hover {
+      background: var(--accent-secondary);
+      transform: translateY(-2px);
+    }
+
+    .modal-btn-confirm.danger {
+      background: var(--error);
+      color: var(--text-primary);
+    }
+
+    .modal-btn-confirm.danger:hover {
+      background: #ff6b7a;
+      box-shadow: 0 8px 24px rgba(255, 71, 87, 0.4);
+    }
+
+    .modal-amount {
+      font-size: 40px;
+      font-weight: 800;
+      text-align: center;
+      margin: 24px 0;
+      letter-spacing: -2px;
+      background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .refund-btn {
+      background: transparent;
+      border: 1px solid var(--border-primary);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .refund-btn:hover {
+      border-color: var(--warning);
+      color: var(--warning);
+      background: rgba(255, 165, 2, 0.1);
+      transform: scale(1.05);
+    }
+
+    .refund-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--bg-primary);
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .footer {
+      margin-top: 80px;
+      padding: 40px 0;
+      border-top: 1px solid var(--border-primary);
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 12px;
+      animation: fadeIn 1s ease 0.8s both;
+    }
+
+    /* Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+      transition: all 0.3s ease;
+      z-index: 999;
+      animation: fabPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes fabPulse {
+      0%, 100% {
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+      }
+      50% {
+        box-shadow: 0 8px 32px rgba(102, 126, 234, 0.6);
+      }
+    }
+
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+    }
+
+    .fab-menu {
+      position: fixed;
+      bottom: 100px;
+      right: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 998;
+    }
+
+    .fab-menu.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .fab-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transform: translateY(20px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .fab-menu.active .fab-item {
+      transform: translateY(0);
+    }
+
+    .fab-menu.active .fab-item:nth-child(1) { transition-delay: 0.05s; }
+    .fab-menu.active .fab-item:nth-child(2) { transition-delay: 0.1s; }
+    .fab-menu.active .fab-item:nth-child(3) { transition-delay: 0.15s; }
+    .fab-menu.active .fab-item:nth-child(4) { transition-delay: 0.2s; }
+
+    .fab-item:hover {
+      background: var(--bg-tertiary);
+      transform: translateX(-8px);
+    }
+
+    .fab-item-icon {
+      font-size: 18px;
+    }
+
+    .fab-item-label {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Keyboard Shortcuts Help */
+    .shortcuts-help {
+      position: fixed;
+      bottom: 32px;
+      left: 32px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 300px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s ease;
+      z-index: 999;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .shortcuts-help.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .shortcuts-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .shortcut-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+
+    .shortcut-key {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-family: 'Courier New', monospace;
+      font-weight: 600;
+    }
+
+    /* Grain texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    @media (max-width: 1200px) {
+      .grid-3, .grid-4, .grid-6, .grid-8, .grid-9 {
+        grid-column: span 12;
+      }
+
+      .hero-balance {
+        font-size: 56px;
+      }
+
+      .stats-bar {
+        flex-direction: column;
+        gap: 24px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 20px;
+      }
+
+      .nav-menu {
+        display: none;
+      }
+
+      .hero-balance {
+        font-size: 40px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .fab, .fab-menu {
+        display: none;
+      }
+
+      .shortcuts-help {
+        display: none;
+      }
+    }
+
+    /* Smooth Scroll */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Copy to clipboard feedback */
+    .copy-feedback {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--success);
+      color: var(--bg-primary);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      animation: copyFeedback 1.5s ease;
+    }
+
+    @keyframes copyFeedback {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+      20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      80% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="animated-bg"></div>
+
+  <!-- Particles Canvas -->
+  <canvas id="particles-canvas"></canvas>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-icon" id="modalIcon">⚠️</div>
+      <div class="modal-title" id="modalTitle">Confirm Action</div>
+      <div class="modal-message" id="modalMessage">Are you sure you want to proceed?</div>
+      <div class="modal-amount" id="modalAmount" style="display: none;"></div>
+      <div class="modal-warning" id="modalWarning" style="display: none;"></div>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="modal-btn modal-btn-confirm" id="modalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Action Button -->
+  <div class="fab" onclick="toggleFabMenu()" id="fab">⚡</div>
+  <div class="fab-menu" id="fabMenu">
+    <div class="fab-item" onclick="window.location.href='/support/'">
+      <div class="fab-item-icon">💬</div>
+      <div class="fab-item-label">Support Chat</div>
+    </div>
+    <div class="fab-item" onclick="scrollToTop()">
+      <div class="fab-item-icon">⬆️</div>
+      <div class="fab-item-label">Back to Top</div>
+    </div>
+    <div class="fab-item" onclick="toggleTheme()">
+      <div class="fab-item-icon" id="themeIcon">🌙</div>
+      <div class="fab-item-label">Toggle theme</div>
+    </div>
+    <div class="fab-item" onclick="toggleShortcuts()">
+      <div class="fab-item-icon">⌨️</div>
+      <div class="fab-item-label">Shortcuts</div>
+    </div>
+  </div>
+
+  <!-- Keyboard Shortcuts Help -->
+  <div class="shortcuts-help" id="shortcutsHelp">
+    <div class="shortcuts-title">Keyboard Shortcuts</div>
+    <div class="shortcut-item">
+      <span>Toggle Theme</span>
+      <span class="shortcut-key">T</span>
+    </div>
+    <div class="shortcut-item">
+      <span>Scroll to Top</span>
+      <span class="shortcut-key">↑</span>
+    </div>
+    <div class="shortcut-item">
+      <span>Close Modal</span>
+      <span class="shortcut-key">ESC</span>
+    </div>
+    <div class="shortcut-item">
+      <span>Copy Card Number</span>
+      <span class="shortcut-key">C</span>
+    </div>
+    <div class="shortcut-item">
+      <span>Show Shortcuts</span>
+      <span class="shortcut-key">?</span>
+    </div>
+  </div>
+
+  <nav class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <div class="logo" onclick="scrollToTop()">
+          <div class="logo-icon"></div>
+          <span>APEX</span>
+        </div>
+        <div class="nav-menu">
+          <a href="#" class="nav-link active">Dashboard</a>
+          <a href="#" class="nav-link">Transactions</a>
+          <a href="#" class="nav-link">Cards</a>
+          <a href="#" class="nav-link">Settings</a>
+        </div>
+        <div class="nav-actions">
+          <div class="theme-toggle" onclick="toggleTheme()" id="themeToggle">🌙</div>
+          <div class="user-menu">
+            <div class="user-avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+            <div class="user-info">
+              <div class="user-name">{{ user.first_name }} {{ user.last_name }}</div>
+              <div class="user-email">{{ user.email }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="hero-section">
+      <div class="hero-title">Available Balance</div>
+      <div class="hero-balance" id="balanceCounter">${{ account.balance }}</div>
+      <div class="hero-subtitle">{{ user.username }} • Last updated now</div>
+
+      <div class="stats-bar">
+        <div class="stat-item">
+          <div class="stat-label">Total Deposits</div>
+          <div class="stat-value" id="depositCounter">${{ account.total_deposit }}</div>
+          <div class="stat-change positive">All time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Total Withdrawals</div>
+          <div class="stat-value" id="withdrawCounter">${{ account.total_withdraw }}</div>
+          <div class="stat-change negative">All time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Total Refunds</div>
+          <div class="stat-value" id="refundCounter">${{ account.total_refund }}</div>
+          <div class="stat-change neutral">All time</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Account ID</div>
+          <div class="stat-value">{{ user.username }}</div>
+          <div class="stat-change">Active</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-layout">
+      <div class="card grid-4">
+        <div class="card-header">
+          <div class="card-title">Your Card</div>
+          <div class="card-action">💳</div>
+        </div>
+
+        <div class="card-flip-container" onclick="flipCard()" id="cardContainer">
+          <div class="card-flipper" id="cardFlipper">
+            <!-- FRONT -->
+            <div class="card-front">
+              <div class="wallet-card">
+                <div class="card-chip"></div>
+                <div class="card-number" id="cardNumber">•••• •••• •••• {{ account.card_number|slice:"-4:" }}</div>
+                <div class="card-holder">
+                  <div class="card-holder-name">
+                    <div class="card-label">Card Holder</div>
+                    <div class="card-value">{{ user.first_name|upper }} {{ user.last_name|upper }}</div>
+                  </div>
+                  <div class="card-holder-name">
+                    <div class="card-label">Valid Thru</div>
+                    <div class="card-value">12/28</div>
+                  </div>
+                </div>
+                <div class="card-network-logo">APEX</div>
+              </div>
+            </div>
+
+            <!-- BACK -->
+            <div class="card-back">
+              <div class="wallet-card">
+                <div class="card-magnetic-strip"></div>
+                <div class="card-cvv-container">
+                  <div class="card-cvv-label">Security Code (CVV)</div>
+                  <div class="card-cvv-box">{{ account.cvv }}</div>
+                </div>
+                <div class="card-back-text">
+                  <p><strong>⚠️ Security Notice:</strong></p>
+                  <p>Never share your CVV with anyone. This code is required for online transactions and verifies you are the rightful owner of this card.</p>
+                  <p style="margin-top: 12px; font-size: 9px; opacity: 0.4;">APEX BANK • Member FDIC • EST. 2025</p>
+                </div>
+                <div class="card-signature-strip">
+                  <div class="card-label">Authorized Signature</div>
+                  <div class="card-signature">{{ user.first_name }} {{ user.last_name }}</div>
+                </div>
+                <div class="card-network-logo">APEX</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="card-toggle" onclick="event.stopPropagation(); toggleCardNumber()">Show full number</a>
+        <div class="card-flip-hint">💡 Click card to flip • Press C to copy</div>
+      </div>
+
+      <div class="card grid-4">
+        <div class="card-header">
+          <div class="card-title">Quick Deposit</div>
+          <div class="card-action">💰</div>
+        </div>
+        <form onsubmit="handleDeposit(event)">
+          <div class="form-group">
+            <label class="form-label">Amount</label>
+            <input type="number" class="form-input" id="depositAmount" placeholder="0.00" min="0.01" step="0.01">
+          </div>
+          <button type="submit" class="btn" id="depositBtn">Deposit Funds</button>
+        </form>
+
+        <button type="button" class="btn btn-reset-balance" onclick="showResetBalanceModal()">Reset Balance</button>
+      </div>
+
+      <div class="card grid-4">
+        <div class="card-header">
+          <div class="card-title">Quick Withdraw</div>
+          <div class="card-action">💸</div>
+        </div>
+        <form onsubmit="handleWithdraw(event)">
+          <div class="form-group">
+            <label class="form-label">Amount</label>
+            <input type="number" class="form-input" id="withdrawAmount" placeholder="0.00" min="0.01" step="0.01">
+          </div>
+          <button type="submit" class="btn" id="withdrawBtn">Withdraw Funds</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div class="grid-layout">
+      <div class="card grid-12">
+        <div class="card-header">
+          <div class="card-title">Recent Activity</div>
+          <div class="card-action">📊</div>
+        </div>
+
+        <div class="transaction-list">
+          {% if user.transactions.all %}
+            {% for transaction in user.transactions.all %}
+            <div class="transaction-item">
+              <div class="transaction-left">
+                <div class="transaction-icon">🛍️</div>
+                <div class="transaction-info">
+                  <h4>{{ transaction.item }}</h4>
+                  <p>{{ transaction.date|date:"M d, Y • g:i A" }} • {{ transaction.order_id }}</p>
+                  {% if transaction.status == 'Paid' %}
+                    <button class="refund-btn" data-transaction-id="{{ transaction.id }}" data-amount="{{ transaction.total }}">Refund</button>
+                  {% elif transaction.status == 'Refunded' %}
+                    <span style="color: var(--success); font-size: 11px; font-weight: 600;">✓ REFUNDED</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="transaction-right">
+                <div class="transaction-amount negative">-${{ transaction.total }}</div>
+                <div class="transaction-status">{{ transaction.status }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="empty-state">
+              <div class="empty-state-icon">📭</div>
+              <div class="empty-state-title">No transactions yet</div>
+              <div class="empty-state-description">Your transaction history will appear here</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>© 2025 Apex Bank. All rights reserved.</div>
+      <div style="margin-top: 8px;">
+        <a href="{% url 'logout' %}" style="color: var(--text-secondary); text-decoration: none; transition: color 0.3s ease;" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--text-secondary)'">Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initial data
+    let cardHidden = true;
+    const fullCardNumber = '{{ account.card_number }}';
+    const lastFour = '{{ account.card_number|slice:"-4:" }}';
+    let fabMenuOpen = false;
+    let shortcutsVisible = false;
+
+    // Particles System
+    function initParticles() {
+      const canvas = document.getElementById('particles-canvas');
+      const ctx = canvas.getContext('2d');
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const particles = [];
+      const particleCount = 50;
+
+      class Particle {
+        constructor() {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.vx = (Math.random() - 0.5) * 0.5;
+          this.vy = (Math.random() - 0.5) * 0.5;
+          this.size = Math.random() * 2;
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+
+          if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+          if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+        }
+
+        draw() {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle());
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach(particle => {
+          particle.update();
+          particle.draw();
+        });
+
+        // Draw connections
+        particles.forEach((p1, i) => {
+          particles.slice(i + 1).forEach(p2 => {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < 100) {
+              ctx.strokeStyle = `rgba(255, 255, 255, ${0.1 * (1 - distance / 100)})`;
+              ctx.lineWidth = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          });
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      animate();
+
+      window.addEventListener('resize', () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
+    }
+
+    // Toast Notifications
+    function showToast(title, message, type = 'success') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+
+      const icons = {
+        success: '✓',
+        error: '✗',
+        warning: '⚠️'
+      };
+
+      toast.innerHTML = `
+        <div class="toast-icon">${icons[type]}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          <div class="toast-message">${message}</div>
+        </div>
+      `;
+
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideInRight 0.3s ease reverse';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    // Animated Counter
+    function animateCounter(element, start, end, duration) {
+      const range = end - start;
+      const increment = range / (duration / 16);
+      let current = start;
+
+      const timer = setInterval(() => {
+        current += increment;
+        if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+          current = end;
+          clearInterval(timer);
+        }
+        element.textContent = '$' + current.toFixed(2);
+      }, 16);
+    }
+
+    // Theme Toggle
+    function toggleTheme() {
+      document.body.classList.toggle('light-mode');
+      const themeIcon = document.getElementById('themeToggle');
+      const fabThemeIcon = document.getElementById('themeIcon');
+      const isLight = document.body.classList.contains('light-mode');
+
+      themeIcon.textContent = isLight ? '☀️' : '🌙';
+      fabThemeIcon.textContent = isLight ? '☀️' : '🌙';
+
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      showToast('Theme Changed', `Switched to ${isLight ? 'light' : 'dark'} mode`);
+    }
+
+    // Load saved theme
+    if (localStorage.getItem('theme') === 'light') {
+      document.body.classList.add('light-mode');
+      document.getElementById('themeToggle').textContent = '☀️';
+      document.getElementById('themeIcon').textContent = '☀️';
+    }
+
+    // FAB Menu
+    function toggleFabMenu() {
+      fabMenuOpen = !fabMenuOpen;
+      document.getElementById('fabMenu').classList.toggle('active');
+      document.getElementById('fab').style.transform = fabMenuOpen ? 'rotate(45deg)' : 'rotate(0)';
+    }
+
+    // Shortcuts
+    function toggleShortcuts() {
+      shortcutsVisible = !shortcutsVisible;
+      document.getElementById('shortcutsHelp').classList.toggle('active');
+    }
+
+    // Scroll to top
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Card Functions
+    function flipCard() {
+      const flipper = document.getElementById('cardFlipper');
+      flipper.classList.toggle('flipped');
+    }
+
+    function toggleCardNumber() {
+      const cardEl = document.getElementById('cardNumber');
+      if (cardHidden) {
+        cardEl.textContent = fullCardNumber.match(/.{1,4}/g).join(' ');
+        cardEl.classList.add('revealed');
+      } else {
+        cardEl.textContent = '•••• •••• •••• ' + lastFour;
+        cardEl.classList.remove('revealed');
+      }
+      cardHidden = !cardHidden;
+    }
+
+    function copyCardNumber() {
+      navigator.clipboard.writeText(fullCardNumber);
+      showToast('Copied!', 'Card number copied to clipboard');
+
+      const container = document.getElementById('cardContainer');
+      const feedback = document.createElement('div');
+      feedback.className = 'copy-feedback';
+      feedback.textContent = 'Copied!';
+      container.appendChild(feedback);
+      setTimeout(() => feedback.remove(), 1500);
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT') return;
+
+      switch(e.key.toLowerCase()) {
+        case 't':
+          toggleTheme();
+          break;
+        case 'arrowup':
+          e.preventDefault();
+          scrollToTop();
+          break;
+        case 'c':
+          copyCardNumber();
+          break;
+        case '?':
+          toggleShortcuts();
+          break;
+        case 'escape':
+          closeModal();
+          if (fabMenuOpen) toggleFabMenu();
+          if (shortcutsVisible) toggleShortcuts();
+          break;
+      }
+    });
+
+    // CSRF Token
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Modal Functions
+    function showModal(config) {
+      const modal = document.getElementById('confirmModal');
+      const icon = document.getElementById('modalIcon');
+      const title = document.getElementById('modalTitle');
+      const message = document.getElementById('modalMessage');
+      const amount = document.getElementById('modalAmount');
+      const warning = document.getElementById('modalWarning');
+      const confirmBtn = document.getElementById('modalConfirm');
+
+      icon.textContent = config.icon || '⚠️';
+      title.textContent = config.title;
+      message.textContent = config.message;
+
+      if (config.amount) {
+        amount.textContent = '$' + config.amount;
+        amount.style.display = 'block';
+      } else {
+        amount.style.display = 'none';
+      }
+
+      if (config.warning) {
+        warning.textContent = config.warning;
+        warning.style.display = 'block';
+      } else {
+        warning.style.display = 'none';
+      }
+
+      confirmBtn.className = 'modal-btn modal-btn-confirm' + (config.danger ? ' danger' : '');
+      confirmBtn.onclick = config.onConfirm;
+
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('confirmModal');
+      modal.classList.remove('active');
+    }
+
+    function showResetBalanceModal() {
+      showModal({
+        icon: '🚨',
+        title: 'Reset Balance',
+        message: 'This will reset your balance to $0.00. This action cannot be undone.',
+        warning: '⚠️ WARNING: By confirming, you acknowledge that your entire account balance will be permanently wiped.',
+        danger: true,
+        onConfirm: () => {
+          closeModal();
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/resetbalance';
+
+          const csrf = document.createElement('input');
+          csrf.type = 'hidden';
+          csrf.name = 'csrfmiddlewaretoken';
+          csrf.value = getCookie('csrftoken');
+          form.appendChild(csrf);
+
+          document.body.appendChild(form);
+          form.submit();
+        }
+      });
+    }
+
+    // Deposit
+    async function handleDeposit(event) {
+      event.preventDefault();
+      const amountInput = document.getElementById('depositAmount');
+      const amount = amountInput.value;
+
+      if (!amount || parseFloat(amount) <= 0) return;
+
+      showModal({
+        icon: '💰',
+        title: 'Confirm Deposit',
+        message: 'You are about to deposit funds into your account.',
+        amount: parseFloat(amount).toFixed(2),
+        onConfirm: async () => {
+          closeModal();
+          const depositBtn = document.getElementById('depositBtn');
+          depositBtn.disabled = true;
+          depositBtn.innerHTML = '<span class="loading-spinner"></span>';
+
+          try {
+            const response = await fetch('/addcash/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({ amount: parseFloat(amount) })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+
+              const balanceEl = document.getElementById('balanceCounter');
+              const oldBalance = parseFloat(balanceEl.textContent.replace('$', ''));
+              animateCounter(balanceEl, oldBalance, parseFloat(data.new_balance), 1000);
+
+              const depositEl = document.getElementById('depositCounter');
+              const oldDeposit = parseFloat(depositEl.textContent.replace('$', ''));
+              animateCounter(depositEl, oldDeposit, parseFloat(data.total_deposits), 1000);
+
+              amountInput.value = '';
+              showToast('Deposit Successful', `$${amount} added to your account`);
+            } else {
+              showToast('Deposit Failed', 'Please try again', 'error');
+            }
+          } catch (error) {
+            showToast('Error', 'Something went wrong', 'error');
+          } finally {
+            depositBtn.disabled = false;
+            depositBtn.textContent = 'Deposit Funds';
+          }
+        }
+      });
+    }
+
+    // Withdraw
+    async function handleWithdraw(event) {
+      event.preventDefault();
+      const amountInput = document.getElementById('withdrawAmount');
+      const amount = amountInput.value;
+
+      if (!amount || parseFloat(amount) <= 0) return;
+
+      showModal({
+        icon: '💸',
+        title: 'Confirm Withdrawal',
+        message: 'You are about to withdraw funds from your account.',
+        amount: parseFloat(amount).toFixed(2),
+        warning: 'Make sure you have sufficient balance before proceeding.',
+        onConfirm: async () => {
+          closeModal();
+          const withdrawBtn = document.getElementById('withdrawBtn');
+          withdrawBtn.disabled = true;
+          withdrawBtn.innerHTML = '<span class="loading-spinner"></span>';
+
+          try {
+            const response = await fetch('/withdrawcash/', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+              },
+              body: JSON.stringify({ amount: parseFloat(amount) })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+
+              const balanceEl = document.getElementById('balanceCounter');
+              const oldBalance = parseFloat(balanceEl.textContent.replace('$', ''));
+              animateCounter(balanceEl, oldBalance, parseFloat(data.new_balance), 1000);
+
+              const withdrawEl = document.getElementById('withdrawCounter');
+              const oldWithdraw = parseFloat(withdrawEl.textContent.replace('$', ''));
+              animateCounter(withdrawEl, oldWithdraw, parseFloat(data.total_withdrawals), 1000);
+
+              amountInput.value = '';
+              showToast('Withdrawal Successful', `$${amount} withdrawn from your account`);
+            } else {
+              const data = await response.json();
+              showToast('Withdrawal Failed', data.error || 'Please try again', 'error');
+            }
+          } catch (error) {
+            showToast('Error', 'Something went wrong', 'error');
+          } finally {
+            withdrawBtn.disabled = false;
+            withdrawBtn.textContent = 'Withdraw Funds';
+          }
+        }
+      });
+    }
+
+    // Refund
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('refund-btn')) {
+        const btn = e.target;
+        const transactionId = btn.dataset.transactionId;
+        const amount = btn.dataset.amount;
+
+        showModal({
+          icon: '↩️',
+          title: 'Refund Transaction',
+          message: 'This will refund the purchase and add the money back to your balance.',
+          amount: parseFloat(amount).toFixed(2),
+          warning: 'This action cannot be undone.',
+          onConfirm: async () => {
+            closeModal();
+            btn.disabled = true;
+            btn.textContent = 'Processing...';
+
+            try {
+              const response = await fetch(`/refund/${transactionId}/`, {
+                method: 'POST',
+                headers: {
+                  'X-CSRFToken': getCookie('csrftoken')
+                }
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                showToast('Refund Successful', `$${amount} refunded to your account`);
+                setTimeout(() => location.reload(), 1500);
+              } else {
+                showToast('Refund Failed', data.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Refund';
+              }
+            } catch (error) {
+              showToast('Error', 'Something went wrong', 'error');
+              btn.disabled = false;
+              btn.textContent = 'Refund';
+            }
+          }
+        });
+      }
+    });
+
+    // Close modal on click outside
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeModal();
+      }
+    });
+
+    // Initialize
+    window.addEventListener('load', () => {
+      initParticles();
+
+      // Animate initial counters
+      const balance = parseFloat(document.getElementById('balanceCounter').textContent.replace('$', ''));
+      const deposits = parseFloat(document.getElementById('depositCounter').textContent.replace('$', ''));
+      const withdrawals = parseFloat(document.getElementById('withdrawCounter').textContent.replace('$', ''));
+      const refunds = parseFloat(document.getElementById('refundCounter').textContent.replace('$', ''));
+
+      animateCounter(document.getElementById('balanceCounter'), 0, balance, 2000);
+      animateCounter(document.getElementById('depositCounter'), 0, deposits, 2000);
+      animateCounter(document.getElementById('withdrawCounter'), 0, withdrawals, 2000);
+      animateCounter(document.getElementById('refundCounter'), 0, refunds, 2000);
+    });
+  </script>
+</body>
+</html>

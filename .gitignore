@@ -1,0 +1,39 @@
+cd ~/Desktop/banking
+git ls-files -z | xargs -0 du -h | sort -h | tail -20
+```
+
+**You should have a `.gitignore` file:**
+```
+# Python
+*.pyc
+__pycache__/
+.venv/
+venv/
+*.egg-info/
+.Python
+.env
+*.log
+
+# Django
+*.sqlite3
+db.sqlite3
+/media/
+/static/
+
+# Docker
+*.tar
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store.terraform/
+*.tfstate*
+.terraform.lock.hcl
