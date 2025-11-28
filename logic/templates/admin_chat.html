@@ -146,7 +146,7 @@
     <div class="chat-header">
         <div>
             <button onclick="closeChat({{ chat.id }})" class="close-chat-btn">Close Chat</button>
-            <div class="chat-title">Chat with {{ chat.user.username }}</div>
+            <div class="chat-title">chat with {{ chat.user.username }}</div>
             <div class="chat-subtitle">Chat #{{ chat.id }} • Started {{ chat.created_at|date:"M d, Y • g:i A" }}</div>
         </div>
         <button class="back-btn" onclick="window.location.href='{% url 'admin_dashboard' %}'">← Back to Dashboard</button>
