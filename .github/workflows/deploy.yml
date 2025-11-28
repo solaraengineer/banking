@@ -12,6 +12,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Debug Secrets
+      run: |
+        echo "Checking secrets..."
+        echo "SERVER_1_IP: ${{ secrets.SERVER_1_IP }}"
+        echo "SERVER_2_IP: ${{ secrets.SERVER_2_IP }}"
+        echo "SSH key length: ${#SSH_PRIVATE_KEY_BASE64}"
+      env:
+        SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
+
     - name: Deploy to Server 1
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
@@ -55,7 +64,7 @@ jobs:
     - name: Deploy to Server 2
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ secrets.SERVER_2_IP }}
+        SERVER_IP: "${{ secrets.SERVER_2_IP }}"
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
