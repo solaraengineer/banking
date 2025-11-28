@@ -5,8 +5,8 @@ on:
     branches: [ main ]
 
 jobs:
-  terraform:
-    name: Terraform Infrastructure
+  deploy:
+    name: Deploy to Servers
     runs-on: ubuntu-latest
 
     steps:
@@ -22,47 +22,83 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-central-1
 
-    - name: Terraform Init
+    - name: Get Server IPs
+      id: get-ips
       run: |
         cd terraform
         terraform init
+        
+        # Get both server IPs
+        SERVER_1=$(terraform output -raw server_1_ip)
+        SERVER_2=$(terraform output -raw server_2_ip)
+        
+        echo "server_1=$SERVER_1" >> $GITHUB_OUTPUT
+        echo "server_2=$SERVER_2" >> $GITHUB_OUTPUT
+        
+        echo "Server 1: $SERVER_1"
+        echo "Server 2: $SERVER_2"
 
-    - name: Terraform Apply
-      run: |
-        cd terraform
-        terraform apply -auto-approve
-
-    - name: Get Server IP
-      id: get-ip
-      run: |
-        cd terraform
-        echo "server_ip=$(terraform output -raw server_ip)" >> $GITHUB_OUTPUT
-
-    outputs:
-      server_ip: ${{ steps.get-ip.outputs.server_ip }}
-
-  deploy:
-    name: Deploy Application
-    needs: terraform
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Deploy to EC2
+    - name: Deploy to Server 1
       env:
         SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
-        SERVER_IP: ${{ needs.terraform.outputs.server_ip }}
+        SERVER_IP: ${{ steps.get-ips.outputs.server_1 }}
       run: |
         echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
         
-        sleep 60
+        echo "Deploying to Server 1..."
         
-        scp -i bank -o StrictHostKeyChecking=no -r . ubuntu@$SERVER_IP:/home/ubuntu/banking
+        # Just sync the banking code, exclude shit we don't need
+        rsync -avz --delete \
+          -e "ssh -i bank -o StrictHostKeyChecking=no" \
+          --exclude '.git' \
+          --exclude '.github' \
+          --exclude 'terraform' \
+          --exclude '*.pyc' \
+          --exclude '__pycache__' \
+          --exclude '.env' \
+          --exclude 'staticfiles' \
+          --exclude 'media' \
+          . ubuntu@$SERVER_IP:/home/ubuntu/banking/
+        
+        # Restart docker containers
+        ssh -i bank -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
+        cd /home/ubuntu/banking
+        docker-compose down
+        docker-compose up -d --build
+        docker ps
+        ENDSSH
+        
+        echo "✅ Server 1 deployed"
+
+    - name: Deploy to Server 2
+      env:
+        SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
+        SERVER_IP: ${{ steps.get-ips.outputs.server_2 }}
+      run: |
+        echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
+        chmod 600 bank
+        
+        echo "Deploying to Server 2..."
+        
+        # Same shit, just sync and restart
+        rsync -avz --delete \
+          -e "ssh -i bank -o StrictHostKeyChecking=no" \
+          --exclude '.git' \
+          --exclude '.github' \
+          --exclude 'terraform' \
+          --exclude '*.pyc' \
+          --exclude '__pycache__' \
+          --exclude '.env' \
+          --exclude 'staticfiles' \
+          --exclude 'media' \
+          . ubuntu@$SERVER_IP:/home/ubuntu/banking/
         
         ssh -i bank -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
         cd /home/ubuntu/banking
-        docker-compose down || true
+        docker-compose down
         docker-compose up -d --build
+        docker ps
         ENDSSH
+        
+        echo "✅ Server 2 deployed"
