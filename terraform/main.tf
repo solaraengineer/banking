@@ -3,7 +3,7 @@ provider "aws" {
 }
 
 resource "aws_security_group" "banking_web" {
-  name        = "banking-web-sg-v7"
+  name        = "banking-web-sg-v8"
   description = "Allow HTTP, HTTPS, SSH"
 
   ingress {
