@@ -51,10 +51,10 @@ jobs:
 
     - name: Deploy to EC2
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PRIVATE_KEY_BASE64: ${{ secrets.SSH_PRIVATE_KEY_BASE64 }}
         SERVER_IP: ${{ needs.terraform.outputs.server_ip }}
       run: |
-        echo "$SSH_PRIVATE_KEY" | tr -d '\r' > bank
+        echo "$SSH_PRIVATE_KEY_BASE64" | base64 -d > bank
         chmod 600 bank
         
         sleep 60
