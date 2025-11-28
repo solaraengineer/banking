@@ -61,8 +61,8 @@ jobs:
         sleep 60
         
         # Copy files to server
-        scp -i bakn.pem -o StrictHostKeyChecking=no -r . ubuntu@$SERVER_IP:/home/ubuntu/banking
+        scp -i bank.pem -o StrictHostKeyChecking=no -r . ubuntu@$SERVER_IP:/home/ubuntu/banking
         
-        ssh -i bakn.pem -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
+        ssh -i bank.pem -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
           cd /home/ubuntu/banking
           docker-compose down
