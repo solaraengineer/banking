@@ -41,7 +41,6 @@ resource "aws_security_group" "banking_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # THIS IS THE FIX - prevents recreation if it already exists
   lifecycle {
     create_before_destroy = true
     prevent_destroy       = true
