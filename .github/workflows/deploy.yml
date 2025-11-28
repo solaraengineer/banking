@@ -55,7 +55,7 @@ jobs:
         SERVER_IP: ${{ needs.terraform.outputs.server_ip }}
       run: |
         echo "$SSH_PRIVATE_KEY" > bank
-        chmod 600 bank.pem
+        chmod 400 bank
         
         # Wait for server to be ready
         sleep 60
