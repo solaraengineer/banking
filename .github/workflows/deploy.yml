@@ -5,13 +5,16 @@ on:
     branches: [ main ]
 
 jobs:
-  deploy:
+  terraform:
+    name: Terraform Infrastructure
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
     - uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_wrapper: false
 
     - uses: aws-actions/configure-aws-credentials@v2
       with:
@@ -19,8 +22,47 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-central-1
 
-    - name: Terraform
+    - name: Terraform Init
       run: |
         cd terraform
         terraform init
+
+    - name: Terraform Apply
+      run: |
+        cd terraform
         terraform apply -auto-approve
+
+    - name: Get Server IP
+      id: get-ip
+      run: |
+        cd terraform
+        echo "server_ip=$(terraform output -raw server_ip)" >> $GITHUB_OUTPUT
+
+    outputs:
+      server_ip: ${{ steps.get-ip.outputs.server_ip }}
+
+  deploy:
+    name: Deploy Application
+    needs: terraform
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Deploy to EC2
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SERVER_IP: ${{ needs.terraform.outputs.server_ip }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > key.pem
+        chmod 600 key.pem
+        
+        # Wait for server to be ready
+        sleep 60
+        
+        # Copy files to server
+        scp -i key.pem -o StrictHostKeyChecking=no -r . ubuntu@$SERVER_IP:/home/ubuntu/banking
+        
+        ssh -i key.pem -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
+          cd /home/ubuntu/banking
+          docker-compose down
