@@ -57,14 +57,12 @@ jobs:
         echo "$SSH_PRIVATE_KEY" | tr -d '\r' > bank
         chmod 600 bank
         
-        # Wait for server to be ready
         sleep 60
         
-        # Copy files to server
         scp -i bank -o StrictHostKeyChecking=no -r . ubuntu@$SERVER_IP:/home/ubuntu/banking
         
         ssh -i bank -o StrictHostKeyChecking=no ubuntu@$SERVER_IP << 'ENDSSH'
-          cd /home/ubuntu/banking
-          docker-compose down || true
-          docker-compose up -d --build
-ENDSSH
+        cd /home/ubuntu/banking
+        docker-compose down || true
+        docker-compose up -d --build
+        ENDSSH
